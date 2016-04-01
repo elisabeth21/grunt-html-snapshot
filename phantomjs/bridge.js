@@ -71,6 +71,27 @@ page.onInitialized = function() {
     if (options.cookies) {
         setCookies(page, options.cookies);
     }
+    
+    page.evaluate(function () {
+        var isFunction = function (obj) {
+            return typeof obj == 'function' || false;
+        };
+        var slice = Array.prototype.slice;
+        Function.prototype.bind = function bind(obj) {
+            var args = slice.call(arguments, 1);
+            var self = this;
+            var F = function () {};
+            var bounded = function() {
+                return self.apply(
+                    this instanceof F ? this : (obj || {}),
+                    args.concat(slice.call(arguments))
+                );
+            };
+            F.prototype = this.prototype || {};
+            bounded.prototype = new F();
+            return bounded;
+        };
+    });
 }
 
 page.open(url, function (status) {
